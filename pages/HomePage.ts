@@ -15,18 +15,14 @@ export class HomePage extends BasePage {
     await this.appLauncher.waitFor();
   }
 
-  async searchFor(keyword: string): Promise<void> {
-    await this.appLauncher.waitFor({ state: 'visible', timeout: 20000 });
+ 
+  async searchFor(keyword: string) {
     await this.appLauncher.click();
-
-    await this.searchAppsInput.waitFor({ state: 'visible', timeout: 20000 });
-    await this.searchAppsInput.fill(keyword);
-
-    const appOption = this.page.getByRole('option', { name: new RegExp(keyword, 'i') }).first();
-    await appOption.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-
-    if (await appOption.isVisible().catch(() => false)) {
-      await appOption.click();
-    }
+    await this.searchAppsInput.pressSequentially(keyword, { delay: 150 });
+    await this.page
+      .getByRole('option', { name: 'Sales', exact: true })
+      .click();
   }
+
+
 }
