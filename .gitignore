@@ -17,9 +17,6 @@ playwright/.cache/
 playwright/.auth/
 storage/
 
-# Generated evidence (screenshots/videos/logs)
-evidence/
-
 # TypeScript build output
 dist/
 build/

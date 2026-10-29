@@ -1,169 +1,124 @@
-# Salesforce Lead Automation Suite
+# Salesforce Lead Automation
 
-This project contains an end-to-end Playwright + TypeScript automation suite for validating core Salesforce Lightning lead management flows.
+Playwright and TypeScript end-to-end tests for Salesforce Lightning. The suite covers Salesforce authentication, lead creation and management, lead conversion, and negative lead-validation scenarios. It also includes unit-style tests for login and verification-code helpers.
 
-## Overview
-
-The solution demonstrates a practical browser automation approach for testing key business workflows in a Salesforce environment, including authentication, lead creation, data validation, lead status updates, and lead conversion.
-
-The implementation is organized around a reusable page object structure and a small test data utility to keep the tests readable, maintainable, and easier to extend.
-
-## Scope of Work
-
-The automation covers the following scenarios:
-
-1. Login validation using persisted browser session data
-2. Lead creation and management within the Salesforce Leads module
-3. Lead conversion flow with account, contact, and opportunity selection
-4. Negative scenarios for validation and duplicate handling
-
-## Negative Scenarios
-
-The following validation scenarios are included to cover expected business-rule failures and data integrity checks:
-
-- Attempt creating a Lead with missing mandatory fields and ensure the proper validation error banners are shown.
-- Attempt a duplicate Lead email if the environment supports duplicate/merge detection.
-
-These negative tests help verify the application prevents invalid lead creation and enforces data quality rules before records are saved.
-
-## Project Structure
+## Project structure
 
 ```text
 .
-├── pages/
-│   ├── BasePage.ts
-│   ├── HomePage.ts
-│   └── LeadPage.ts
-├── tests/
-│   ├── Login.spec.ts
-│   ├── LeadCreationAndManagement.spec.ts
-│   └── LeadConvert.spec.ts
-├── utils/
-│   └── dataGenerator.ts
-├── storage/
-│   └── storageState.json
+├── pages/                 # Page objects for Salesforce pages
+├── tests/                 # Playwright tests
+├── utils/                 # Login, verification, and test-data helpers
+├── storage/               # Generated Playwright authentication state (git-ignored)
 ├── playwright.config.ts
 ├── package.json
-├── .gitignore
-├── README.md
-└── node_modules/
+└── .env.example
 ```
 
-## Test Coverage
+## Getting started
 
-### 1. Login Validation
-File: [tests/Login.spec.ts](tests/Login.spec.ts)
+### Prerequisites
 
-This test confirms that the user session is already authenticated and that the Salesforce home page loads successfully after reusing stored browser state.
+- Node.js and npm
+- Access to a Salesforce org
+- Mailosaur credentials if Salesforce requires email verification during login
 
-Key validations:
-- the session contains cookies from the saved Playwright state
-- the app loads successfully
-- the Home page is rendered and ready for interaction
+### Install and configure
 
-### 2. Lead Creation and Management
-File: [tests/LeadCreationAndManagement.spec.ts](tests/LeadCreationAndManagement.spec.ts)
+1. Install the dependencies and Playwright browsers:
 
-This scenario validates lead creation and management in the Salesforce UI.
+   ```bash
+   npm install
+   npx playwright install
+   ```
 
-The flow includes:
-- opening the home page
-- locating the Sales area
-- navigating to the Leads tab
-- creating a new lead with generated data
-- checking that the lead detail page opens
-- validating the lead ID and displayed field values
-- updating the lead status
+2. Copy the environment template and edit `.env`:
 
-### 3. Lead Conversion
-File: [tests/LeadConvert.spec.ts](tests/LeadConvert.spec.ts)
+   ```bash
+   cp .env.example .env
+   ```
 
-This scenario verifies the lead conversion process in Salesforce Lightning.
+   Set the Salesforce home and login URLs in `.env`, along with the Salesforce username and password. For example:
 
-The flow includes:
-- creating a lead
-- opening the conversion menu actions
-- selecting existing account/contact/opportunity options where applicable
-- completing the conversion
-- confirming the conversion success message is displayed
+   ```dotenv
+   SALESFORCE_HOME_URL=https://<your-salesforce-org>/lightning/page/home
+   SALESFORCE_LOGIN_URL=https://<your-salesforce-org>/
+   SALESFORCE_USERNAME=your_username
+   SALESFORCE_PASSWORD=your_password
+   ```
 
-## Page Object Model
+   If login requires email verification, also set `MAILOSAUR_API_KEY`, `MAILOSAUR_SERVER_ID`, and `MAILOSAUR_INBOX_ID` from `.env.example`. The saved session is stored at `storage/storageState.json`.
 
-The project follows a page object approach to keep the test logic clear and reusable.
+3. Create or refresh the saved Salesforce session. Run the login test by itself with one worker:
 
-- [pages/BasePage.ts](pages/BasePage.ts): shared browser/page behaviors
-- [pages/HomePage.ts](pages/HomePage.ts): home page navigation and search actions
-- [pages/LeadPage.ts](pages/LeadPage.ts): lead-specific actions such as creation, detail checks, and updates
+   ```bash
+   npx playwright test tests/Login.spec.ts --project=chromium --workers=1
+   ```
 
-This structure reduces duplication and makes the automation easier to maintain as the UI evolves.
+   The test logs in as needed and saves the authenticated browser state for the other Salesforce UI tests. Keep the saved state private; it contains session credentials.
 
-## Test Data Generation
+## Run tests
 
-Test data is generated through [utils/dataGenerator.ts](utils/dataGenerator.ts).
-
-The utility provides:
-- `generateUser()` for deterministic generated user values
-- `generateUserByFaker()` for realistic Faker-generated values
-
-This allows the suite to create unique records consistently while testing real-world scenarios.
-
-## Prerequisites
-
-Before running the suite, ensure the following are installed:
-
-- Node.js
-- npm
-- Playwright
-- Playwright browser binaries
-
-## Setup
-
-Install the project dependencies:
+Run **all tests in `tests/`** with one worker:
 
 ```bash
-npm install
+npx playwright test tests --workers=1
 ```
 
-Install the required browsers:
+The login flow does not work reliably with multiple workers, so retain `--workers=1` when running the full suite or `Login.spec.ts`. The configured browser projects are Chromium, Firefox, and WebKit; Playwright runs the suite in each project by default.
+
+Run an individual test file:
 
 ```bash
-npx playwright install
-```
-
-## Running the Tests
-
-Run the full suite:
-
-```bash
-npx playwright test
-```
-
-Run individual files:
-
-```bash
-npx playwright test tests/Login.spec.ts
+npx playwright test tests/Login.spec.ts --project=chromium --workers=1
+npx playwright test tests/loginHelper.spec.ts
 npx playwright test tests/LeadCreationAndManagement.spec.ts
 npx playwright test tests/LeadConvert.spec.ts
+npx playwright test tests/NegativeScenarios.spec.ts
 ```
 
-Run the tests with Playwright's UI mode:
-
-```bash
-npx playwright test --ui
-```
-
-Open the HTML report:
+Open the HTML report after a run:
 
 ```bash
 npx playwright show-report
 ```
 
-## Notes
+## Test coverage
 
-- The tests rely on the authenticated state stored in [storage/storageState.json](storage/storageState.json).
-- Salesforce Lightning selectors may change over time; minor updates may be required if the UI is modified.
-- The automation is designed to reflect real-world end-to-end UI validation patterns used in enterprise QA and production-grade testing workflows.
+- **`Login.spec.ts`** — authenticates to Salesforce, checks the saved session state, and verifies that the Home page loads.
+- **`loginHelper.spec.ts`** — tests verification-code extraction, Mailosaur authentication headers, and authenticated-session detection.
+- **`LeadCreationAndManagement.spec.ts`** — creates a lead, checks its details and record ID, then updates its status.
+- **`LeadConvert.spec.ts`** — creates and converts a lead, selecting existing Salesforce records when available.
+- **`NegativeScenarios.spec.ts`** — checks required-field validation and duplicate lead handling.
 
-## Summary
+The Salesforce UI tests use page objects in `pages/`. Test data is generated in `utils/dataGenerator.ts`. Salesforce UI changes, org configuration, or duplicate-detection rules may require corresponding test updates.
 
-This project delivers a focused, working Salesforce automation suite covering the main lead lifecycle processes: login, lead creation, validation, status updates, conversion, and negative validation scenarios. It showcases a structured and maintainable Playwright implementation suitable for client-facing delivery and broader regression coverage.
+## Shadow DOM / Dynamic Component Evidence
+
+### Salesforce Lead Conversion — Existing Account Search
+
+During lead conversion in the Salesforce org used for this submission, the Existing Account Search input is rendered inside a Salesforce Aura component. Its `data-aura-rendered-by` value is generated at runtime, so a selector based on a captured value can stop matching after the component is re-rendered; the DevTools screenshots below show the generated attribute and the failed repeated query.
+
+**Naive locator:**
+
+```ts
+page.locator('[data-aura-rendered-by="3411:0"]');
+```
+
+**Locator used in the test** ([`tests/LeadConvert.spec.ts`](tests/LeadConvert.spec.ts)):
+
+```ts
+page.getByRole('combobox', { name: 'Account Search' });
+```
+
+This locator uses the input's semantic role and visible accessible name rather than Salesforce's transient Aura identifier. Those user-facing attributes are meaningful and are less likely to change when Salesforce regenerates the component's internal DOM.
+
+**DevTools DOM evidence:**
+
+![Salesforce Account Search DOM showing its generated Aura attribute](evidence/partC-dynamic-dom.png)
+
+**Failed query evidence:**
+
+![DevTools console showing the generated-attribute query no longer matching](evidence/partC-dynamic-dom-query-selector.png)
+
+**Org recording:** [View the Lead Conversion dynamic DOM recording](evidence/partc-dynamic-dom-recording.mov)
