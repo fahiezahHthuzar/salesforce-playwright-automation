@@ -1,8 +1,41 @@
 
-# Playwright
+# Node.js dependencies
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+
+# Environment variables and secrets
+.env
+.env.*
+
+
+# Playwright generated reports
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Playwright authentication/session files
+playwright/.auth/
+storage/
+
+# Generated evidence (screenshots/videos/logs)
+evidence/
+
+# TypeScript build output
+dist/
+build/
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+
+# Log files
+*.log
+npm-debug.log*
+
+# macOS files
+.DS_Store
+
+# IDE settings (optional)
+.idea/
+package-lock.json
+storage/storageState.json
