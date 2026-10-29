@@ -39,3 +39,4 @@ npm-debug.log*
 .idea/
 package-lock.json
 storage/storageState.json
+package-lock.json
