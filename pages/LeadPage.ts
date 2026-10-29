@@ -26,7 +26,7 @@ export class LeadsPage extends BasePage {
 
   async openLeadsTab(): Promise<void> {
     await this.leadsTab.click();
-    await this.page.waitForURL('**/lightning/o/Lead/list?filterName=__Recent');
+    await this.page.waitForURL('**/lightning/o/Lead/**?filterName=**', { waitUntil: 'domcontentloaded' });
   }
 
   async openDetailsTab(): Promise<void> {

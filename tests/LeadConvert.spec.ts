@@ -32,7 +32,7 @@ test.describe('Lead conversion criteria - new account and contact', () => {
 
     const accountOptions = page.getByRole('option');
     const accountOption = accountOptions.nth(1);
-    const foundAccountOption = await accountOption.waitFor({ state: 'visible' }).then(() => true).catch(() => false);
+    const foundAccountOption = await accountOption.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false);
 
     if (foundAccountOption) {
       await accountOption.click();
@@ -53,6 +53,8 @@ test.describe('Lead conversion criteria - new account and contact', () => {
       // choose existing opportunity
       await page.getByText('Choose Existing Opportunity').click();
       await page.locator('.slds-radio_faux').first().click();
+    } else {
+      await page.getByText('Create New Account').click();
     }
 
     await page.getByRole('button', { name: 'Convert' }).click();

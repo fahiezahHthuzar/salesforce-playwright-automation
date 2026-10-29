@@ -1,5 +1,8 @@
+import fs from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
-
+import 'dotenv/config';
+const storageStatePath = process.env.PW_STORAGE_STATE || 'storage/storageState.json';
+const hasStorageState = fs.existsSync(storageStatePath);
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -25,8 +28,9 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://orgfarm-b891a9f0fa-dev-ed.develop.lightning.force.com/lightning/page/home',
-    storageState: 'storage/storageState.json',
+    baseURL: process.env.SALESFORCE_HOME_URL,
+    storageState: hasStorageState ? storageStatePath : undefined,
+
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
