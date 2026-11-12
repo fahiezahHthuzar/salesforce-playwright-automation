@@ -5,6 +5,7 @@ node_modules/
 # Environment variables and secrets
 .env
 .env.*
+!.env.example
 
 
 # Playwright generated reports
@@ -34,6 +35,5 @@ npm-debug.log*
 
 # IDE settings (optional)
 .idea/
-package-lock.json
-storage/storageState.json
-package-lock.json
+
+
